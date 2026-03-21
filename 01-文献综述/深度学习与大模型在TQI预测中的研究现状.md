@@ -89,7 +89,77 @@
 - **架构**: GPT风格的Decoder-only Transformer
 - **优势**: 自回归生成，可预测任意长度
 
-### 2.3 大模型应用建议
+### 2.4 TimeMixer: 多尺度混合架构 (ICLR 2024)
+
+**论文**: *TimeMixer: Decomposable Multiscale Mixing for Time Series Forecasting*  
+**机构**: 蚂蚁集团 + 清华大学  
+**会议**: ICLR 2024  
+**GitHub**: https://github.com/kwuking/TimeMixer
+
+#### 核心思想
+TimeMixer 提出**多尺度混合（Multiscale Mixing）**新视角：
+- 不同采样尺度呈现不同模式（细尺度→微观信息，粗尺度→宏观信息）
+- 纯MLP架构，但性能超越Transformer类模型
+- 计算效率极高，适合工业部署
+
+#### 架构设计
+
+```
+输入序列
+    ↓
+多尺度生成（平均池化降采样）→ x0, x1, x2, ... xM
+    ↓
+┌─────────────────────────────────────┐
+│ Past-Decomposable-Mixing (PDM)      │
+│  • 对每个尺度做分解（季节+趋势）     │
+│  • 季节性：自底向上混合（细→粗）     │
+│  • 趋势：自顶向下混合（粗→细）       │
+└─────────────────────────────────────┘
+    ↓
+┌─────────────────────────────────────┐
+│ Future-Multipredictor-Mixing (FMM)  │
+│  • 多尺度预测器集成                  │
+│  • 利用各尺度的互补预测能力          │
+└─────────────────────────────────────┘
+    ↓
+预测输出
+```
+
+#### 关键创新
+
+| 组件 | 功能 | 效果 |
+|------|------|------|
+| **PDM** | 分解多尺度的季节/趋势成分，双向混合 | 微观季节性+宏观趋势信息聚合 |
+| **FMM** | 多预测器集成 | 互补预测能力融合 |
+| **纯MLP** | 无Attention，纯多层感知机 | 计算效率极高，SOTA性能 |
+
+#### 性能表现
+- **长期预测** + **短期预测**：双SOTA
+- **8类时间序列任务**：预测、插补、分类、异常检测等全面领先
+- **运行效率**：优于Transformer类模型
+
+#### TimeMixer++ (ICLR 2025)
+**升级版**新增能力：
+- 多分辨率时间成像（MRTI）
+- 时间图像分解（TID）
+- 支持更通用的预测分析任务
+
+#### 与我们的多尺度模型对比
+
+| 特性 | TimeMixer | DeepMultiscaleLLM (我们的设计) |
+|------|-----------|-------------------------------|
+| 分解层 | PDM多尺度分解 | STL分解 |
+| 特征提取 | MLP混合 | LSTM/Transformer/CNN |
+| 大模型融合 | ❌ 无 | ✅ Lag-Llama/Time-LLM |
+| 可解释性 | ⚠️ 中等 | ✅ 显式分层输出 |
+| 零样本能力 | ❌ 无 | ✅ 继承大模型能力 |
+| 计算效率 | ✅ 极高 | ⚠️ 中等（大模型开销） |
+
+**结论**: TimeMixer是非常强的基线模型，建议纳入对比实验。
+
+---
+
+### 2.5 大模型应用建议
 
 **对于TQI预测任务**:
 
@@ -170,6 +240,10 @@
 4. Jin, M., et al. (2024). Time-LLM: Time Series Forecasting by Reprogramming Large Language Models. *ICLR 2024*.
 
 5. Liu, Y., et al. (2024). Timer: Transformers for Time Series Analysis at Scale. *arXiv preprint*.
+
+6. Wang, S., et al. (2024). TimeMixer: Decomposable Multiscale Mixing for Time Series Forecasting. *ICLR 2024*.
+
+7. Wang, S., et al. (2025). TimeMixer++: General Multiscale Pattern Modeling for Time Series Analysis. *ICLR 2025*.
 
 ---
 
