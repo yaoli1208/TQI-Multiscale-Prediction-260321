@@ -1,0 +1,122 @@
+39个合格样本时序图索引
+======================================================================
+
+排序依据: MAE (从小到大)
+
+[01] Mile 1184400: MAE=0.127, Improve=16.5%, TQI=2.61
+      File: figures/sample_01_mile_1184400.png
+
+[02] Mile 1191400: MAE=0.157, Improve=56.7%, TQI=2.26
+      File: figures/sample_02_mile_1191400.png
+
+[03] Mile 733400: MAE=0.161, Improve=46.9%, TQI=3.69
+      File: figures/sample_03_mile_733400.png
+
+[04] Mile 734400: MAE=0.161, Improve=34.7%, TQI=3.36
+      File: figures/sample_04_mile_734400.png
+
+[05] Mile 1213400: MAE=0.163, Improve=39.6%, TQI=2.54
+      File: figures/sample_05_mile_1213400.png
+
+[06] Mile 1190400: MAE=0.190, Improve=72.0%, TQI=2.24
+      File: figures/sample_06_mile_1190400.png
+
+[07] Mile 811400: MAE=0.192, Improve=24.3%, TQI=3.19
+      File: figures/sample_07_mile_811400.png
+
+[08] Mile 910400: MAE=0.193, Improve=22.2%, TQI=3.03
+      File: figures/sample_08_mile_910400.png
+
+[09] Mile 879400: MAE=0.194, Improve=35.6%, TQI=3.02
+      File: figures/sample_09_mile_879400.png
+
+[10] Mile 713400: MAE=0.194, Improve=65.3%, TQI=3.34
+      File: figures/sample_10_mile_713400.png
+
+[11] Mile 830400: MAE=0.202, Improve=10.7%, TQI=3.22
+      File: figures/sample_11_mile_830400.png
+
+[12] Mile 821400: MAE=0.202, Improve=42.5%, TQI=3.30
+      File: figures/sample_12_mile_821400.png
+
+[13] Mile 832400: MAE=0.203, Improve=22.3%, TQI=3.47
+      File: figures/sample_13_mile_832400.png
+
+[14] Mile 812400: MAE=0.211, Improve=44.8%, TQI=3.03
+      File: figures/sample_14_mile_812400.png
+
+[15] Mile 1189400: MAE=0.213, Improve=54.9%, TQI=2.86
+      File: figures/sample_15_mile_1189400.png
+
+[16] Mile 745400: MAE=0.215, Improve=25.9%, TQI=3.25
+      File: figures/sample_16_mile_745400.png
+
+[17] Mile 1037400: MAE=0.219, Improve=73.3%, TQI=2.78
+      File: figures/sample_17_mile_1037400.png
+
+[18] Mile 1208400: MAE=0.228, Improve=60.7%, TQI=2.77
+      File: figures/sample_18_mile_1208400.png
+
+[19] Mile 712400: MAE=0.229, Improve=59.0%, TQI=3.28
+      File: figures/sample_19_mile_712400.png
+
+[20] Mile 1209400: MAE=0.230, Improve=46.6%, TQI=2.58
+      File: figures/sample_20_mile_1209400.png
+
+[21] Mile 930400: MAE=0.233, Improve=25.4%, TQI=2.85
+      File: figures/sample_21_mile_930400.png
+
+[22] Mile 936400: MAE=0.238, Improve=10.6%, TQI=2.84
+      File: figures/sample_22_mile_936400.png
+
+[23] Mile 1010400: MAE=0.243, Improve=78.0%, TQI=3.17
+      File: figures/sample_23_mile_1010400.png
+
+[24] Mile 1023400: MAE=0.245, Improve=31.0%, TQI=3.25
+      File: figures/sample_24_mile_1023400.png
+
+[25] Mile 883400: MAE=0.247, Improve=35.5%, TQI=3.63
+      File: figures/sample_25_mile_883400.png
+
+[26] Mile 881400: MAE=0.251, Improve=40.8%, TQI=3.02
+      File: figures/sample_26_mile_881400.png
+
+[27] Mile 892400: MAE=0.252, Improve=28.1%, TQI=3.13
+      File: figures/sample_27_mile_892400.png
+
+[28] Mile 895400: MAE=0.258, Improve=39.7%, TQI=2.63
+      File: figures/sample_28_mile_895400.png
+
+[29] Mile 1026400: MAE=0.260, Improve=80.1%, TQI=2.94
+      File: figures/sample_29_mile_1026400.png
+
+[30] Mile 1033400: MAE=0.266, Improve=73.6%, TQI=2.95
+      File: figures/sample_30_mile_1033400.png
+
+[31] Mile 913400: MAE=0.275, Improve=10.5%, TQI=2.53
+      File: figures/sample_31_mile_913400.png
+
+[32] Mile 893400: MAE=0.277, Improve=46.1%, TQI=2.92
+      File: figures/sample_32_mile_893400.png
+
+[33] Mile 861400: MAE=0.280, Improve=11.1%, TQI=3.14
+      File: figures/sample_33_mile_861400.png
+
+[34] Mile 1212400: MAE=0.286, Improve=45.1%, TQI=2.98
+      File: figures/sample_34_mile_1212400.png
+
+[35] Mile 820400: MAE=0.288, Improve=36.4%, TQI=3.04
+      File: figures/sample_35_mile_820400.png
+
+[36] Mile 898400: MAE=0.289, Improve=15.2%, TQI=2.89
+      File: figures/sample_36_mile_898400.png
+
+[37] Mile 814400: MAE=0.292, Improve=34.8%, TQI=3.40
+      File: figures/sample_37_mile_814400.png
+
+[38] Mile 1018400: MAE=0.294, Improve=81.1%, TQI=2.86
+      File: figures/sample_38_mile_1018400.png
+
+[39] Mile 1011400: MAE=0.295, Improve=83.8%, TQI=3.09
+      File: figures/sample_39_mile_1011400.png
+

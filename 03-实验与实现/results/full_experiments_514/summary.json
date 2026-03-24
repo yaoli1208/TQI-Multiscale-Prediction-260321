@@ -1,0 +1,18 @@
+{
+  "total_samples": 514,
+  "trident_best_count": 298,
+  "trident_best_ratio": 0.5797665369649806,
+  "method_wins": {
+    "PostMaintenance": 162,
+    "RollingAnchor": 136,
+    "Holt": 109,
+    "MA": 83,
+    "LSTM": 24
+  },
+  "mean_mae": {
+    "MA": 0.4859554197578612,
+    "Holt": 0.4330517213344299,
+    "LSTM": 0.8146512763829971,
+    "Trident": 0.3589682827916076
+  }
+}

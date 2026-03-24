@@ -1,0 +1,4 @@
+Traceback (most recent call last):
+  File "/root/.openclaw/workspace/02-research/active/2026-03-21-基于大模型的数据智能分析助手框架研究/03-实验与实现/full_experiment_514.py", line 12, in <module>
+    from statsmodels.tsa.holtwinters import ExponentialSmoothing
+ModuleNotFoundError: No module named 'statsmodels'

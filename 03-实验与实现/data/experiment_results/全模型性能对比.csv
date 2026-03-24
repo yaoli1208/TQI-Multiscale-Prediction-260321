@@ -1,0 +1,10 @@
+﻿排名,模型,MAE,RMSE,MAPE,相比v1改进%,相比TimeMixer改进%,类型
+1,Model B (STL-Trend),0.2136,0.2526,9.73,68.7,27.9, ours
+2,Fusion-误差加权,0.2345,0.265,10.92,65.6,20.9, fusion
+3,Fusion-分步融合,0.2378,0.2692,11.06,65.1,19.8, fusion
+4,Fusion-简单平均,0.2396,0.2721,11.19,64.9,19.2, fusion
+5,Fusion-规则融合,0.2712,0.303,12.65,60.3,8.5, fusion
+6,TimeMixer (基线),0.2964,0.3426,13.99,56.6,0.0, baseline
+7,Model A (多尺度MLP),0.2964,0.3426,13.99,56.6,0.0, fusion
+8,DeepMultiscaleLLM v2,0.3499,0.4002,16.55,48.7,-18.0, ours
+9,DeepMultiscaleLLM v1,0.6823,0.7034,31.74,0.0,-130.2, ours
