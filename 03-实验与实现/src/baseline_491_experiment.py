@@ -3,23 +3,31 @@
 """
 491样本基线对比实验 - 整合版
 ============================
-6种基线方法对比:
+7种基线方法对比:
 1. 历史均值 (Historical Mean) - 新增
 2. 移动平均 (Moving Average, MA) - 复用
 3. Holt-Winters (Triple Exponential Smoothing) - 升级
-4. LSTM - 复用
-5. TimeMixer - 复用
-6. Trident (滚动锚定) - 复用
+4. MLP (Multi-Layer Perceptron) - 复用514实验实现
+5. LSTM (Long Short-Term Memory) - 复用
+6. TimeMixer - 复用
+7. Trident (滚动锚定) - 复用并升级
 
 代码来源:
-- MA/LSTM/TimeMixer: run_baseline_full.py
-- Trident: full_experiment_514.py
+- MA/TimeMixer: run_baseline_full.py
+- MLP: full_experiment_514.py (原被误命名为'LSTM')
+- LSTM: run_baseline_full.py (真正的循环神经网络)
+- Trident: full_experiment_514.py (已按论文设计修正)
 - Historical Mean: 新增
 - Holt-Winters: 升级使用statsmodels
 
+重要说明:
+- MLP使用sklearn的MLPRegressor，与514实验结果直接可比
+- LSTM使用tensorflow.keras，是真正的深度学习基线
+- Trident已按论文公式完整实现: 锚定值+季节性+劣化趋势
+
 作者: Kimi Claw
 日期: 2026-03-24
-版本: v1.0
+版本: v1.1
 """
 
 import pandas as pd
@@ -146,13 +154,81 @@ def exponential_smoothing_simple(train_df, test_df):
         'mape': np.mean(np.abs((y_true - y_pred) / y_true)) * 100
     }
 
-# ==================== 4. LSTM基线 ====================
+# ==================== 4. MLP基线 (与514实验可比) ====================
+def mlp_baseline(train_df, test_df):
+    """
+    MLP神经网络基线 - 与514实验的"LSTM"实现保持一致
+    
+    代码来源: full_experiment_514.py 的 baseline_lstm() 函数
+    注意: 514实验中该方法被误命名为"LSTM"，实际使用MLPRegressor实现
+    
+    实现特点:
+    - 使用sklearn的MLPRegressor (hidden_layer_sizes=(50, 25))
+    - 输入特征: days_since_start, month, year
+    - 与514实验结果直接可比
+    
+    命名说明:
+    - mlp: 本实现，使用MLPRegressor（多层感知机）
+    - lstm: 下方真正的LSTM实现（使用tensorflow.keras.layers.LSTM）
+    """
+    try:
+        from sklearn.neural_network import MLPRegressor
+        from sklearn.preprocessing import StandardScaler
+        
+        train_df = train_df.copy()
+        test_df = test_df.copy()
+        
+        # 构建时序特征（与514实验完全一致）
+        train_df['days_since_start'] = (train_df['date'] - train_df['date'].min()).dt.days
+        train_df['month'] = train_df['date'].dt.month
+        train_df['year'] = train_df['date'].dt.year
+        
+        X_train = train_df[['days_since_start', 'month', 'year']].values
+        y_train = train_df['tqi_value'].values
+        
+        scaler = StandardScaler()
+        X_train_scaled = scaler.fit_transform(X_train)
+        
+        # 与514实验相同的模型结构: (50, 25)
+        model = MLPRegressor(hidden_layer_sizes=(50, 25), max_iter=1000, random_state=42)
+        model.fit(X_train_scaled, y_train)
+        
+        # 预测
+        test_df['days_since_start'] = (test_df['date'] - train_df['date'].min()).dt.days
+        test_df['month'] = test_df['date'].dt.month
+        test_df['year'] = test_df['date'].dt.year
+        X_test = test_df[['days_since_start', 'month', 'year']].values
+        X_test_scaled = scaler.transform(X_test)
+        
+        y_pred = model.predict(X_test_scaled)
+        y_true = test_df['tqi_value'].values
+        
+        return {
+            'mae': mean_absolute_error(y_true, y_pred),
+            'rmse': np.sqrt(mean_squared_error(y_true, y_pred)),
+            'mape': np.mean(np.abs((y_true - y_pred) / y_true)) * 100
+        }
+        
+    except Exception as e:
+        print(f"      MLP错误: {e}")
+        return {'mae': float('nan'), 'rmse': float('nan'), 'mape': float('nan')}
+
+# ==================== 5. LSTM基线 (真正的深度学习基线) ====================
 def lstm_baseline(train_df, test_df):
     """
-    LSTM预测 - 完整版 (50 epochs)
+    LSTM预测 - 真正的循环神经网络实现 (50 epochs)
     
     代码来源: run_baseline_full.py (lstm_prediction_full)
     修改: 适配新的数据接口，返回多指标
+    
+    与MLP的区别:
+    - MLP: 使用简单时序特征 + 全连接网络
+    - LSTM: 使用序列窗口 + 循环神经网络，能捕捉长期依赖
+    
+    架构:
+    - LSTM层: 32个单元
+    - 输出层: Dense(1)
+    - 训练: 50 epochs, batch_size=16
     """
     try:
         import tensorflow as tf
@@ -218,7 +294,7 @@ def lstm_baseline(train_df, test_df):
         print(f"      LSTM错误: {e}")
         return {'mae': float('nan'), 'rmse': float('nan'), 'mape': float('nan')}
 
-# ==================== 5. TimeMixer基线 ====================
+# ==================== 6. TimeMixer基线 ====================
 def timemixer_baseline(train_df, test_df):
     """
     TimeMixer简化实现 - 多尺度分解
@@ -279,29 +355,67 @@ def calculate_seasonal(train_df):
     seasonal_adj = seasonal_mean - overall_mean
     return seasonal_adj, overall_mean
 
-def trident_rolling_anchor(train_df, test_df):
+def trident_rolling_anchor(train_df, test_df, lambda_decay=0.01):
     """
-    Trident滚动锚定策略
+    Trident滚动锚定策略 - 符合论文设计的完整实现
     
-    代码来源: full_experiment_514.py (trident_strategies)
-    修改: 适配新的数据接口，仅保留滚动锚定策略
+    论文公式: ŷ(t) = A_year(tm) + δ_month(t) + λ·(t - tm)
+    
+    其中:
+    - A_year(tm): 大修后稳定期锚定值
+    - δ_month(t): 季节性月度偏差
+    - λ·(t - tm): 线性劣化趋势
+    
+    代码来源: 基于 full_experiment_514.py 升级，适配491实验框架
     """
-    # 计算季节性
+    # 计算季节性调整系数
     seasonal_adj, train_mean = calculate_seasonal(train_df)
     
     y_true = test_df['tqi_value'].values
     
-    # 滚动锚定: 最近3年度均值 + 季节性调整
-    train_df_copy = train_df.copy()
-    train_df_copy['year'] = train_df_copy['date'].dt.year
-    yearly_mean = train_df_copy.groupby('year')['tqi_value'].mean()
-    recent_mean = yearly_mean.tail(3).mean() if len(yearly_mean) >= 3 else yearly_mean.mean()
+    # 1. 检测大修点（局部最小值且下降>0.3）
+    tqi_vals = train_df['tqi_value'].values
+    dates = train_df['date'].values
+    local_mins = []
     
+    for i in range(1, len(tqi_vals) - 1):
+        # 局部最小值检测
+        if tqi_vals[i] < tqi_vals[i-1] and tqi_vals[i] < tqi_vals[i+1]:
+            # 下降幅度>0.3视为大修点
+            if tqi_vals[i-1] - tqi_vals[i] > 0.3:
+                local_mins.append((i, tqi_vals[i], dates[i]))
+    
+    # 2. 计算锚定值和锚定日期
+    if local_mins:
+        # 使用最近的大修点
+        last_min_idx, _, anchor_date = local_mins[-1]
+        # 取大修后1-2个月数据作为稳定期（约10个记录）
+        stable_end_idx = min(last_min_idx + 10, len(train_df))
+        stable_period = train_df.iloc[last_min_idx:stable_end_idx]
+        anchor_val = stable_period['tqi_value'].mean()
+        anchor_date = pd.Timestamp(anchor_date)
+    else:
+        # 无大修记录时回退到最近3年均值（原简化逻辑）
+        train_df_copy = train_df.copy()
+        train_df_copy['year'] = train_df_copy['date'].dt.year
+        yearly_mean = train_df_copy.groupby('year')['tqi_value'].mean()
+        anchor_val = yearly_mean.tail(3).mean() if len(yearly_mean) >= 3 else yearly_mean.mean()
+        anchor_date = train_df['date'].min()
+    
+    # 3. 预测 = 锚定值 + 季节性调整 + 劣化趋势
     predictions = []
     for _, row in test_df.iterrows():
         month = row['date'].month
         seasonal = seasonal_adj.get(month, 0)
-        predictions.append(recent_mean + seasonal)
+        
+        # 计算从锚定时间到预测时间的月数差
+        months_diff = (row['date'] - anchor_date).days / 30.0
+        
+        # 添加劣化趋势: λ * 月数差
+        deterioration = lambda_decay * max(0, months_diff)
+        
+        pred = anchor_val + seasonal + deterioration
+        predictions.append(pred)
     
     y_pred = np.array(predictions)
     
@@ -372,14 +486,15 @@ def run_single_sample(mile, verbose=True):
         'test_count': len(test_df)
     }
     
-    # 运行6种基线方法
+    # 运行7种基线方法
     methods = [
-        ('historical_mean', historical_mean_baseline, '[1/6] 历史均值'),
-        ('ma', moving_average_baseline, '[2/6] 移动平均'),
-        ('holt_winters', holt_winters_baseline, '[3/6] Holt-Winters'),
-        ('lstm', lstm_baseline, '[4/6] LSTM'),
-        ('timemixer', timemixer_baseline, '[5/6] TimeMixer'),
-        ('trident', trident_rolling_anchor, '[6/6] Trident')
+        ('historical_mean', historical_mean_baseline, '[1/7] 历史均值'),
+        ('ma', moving_average_baseline, '[2/7] 移动平均'),
+        ('holt_winters', holt_winters_baseline, '[3/7] Holt-Winters'),
+        ('mlp', mlp_baseline, '[4/7] MLP'),
+        ('lstm', lstm_baseline, '[5/7] LSTM (RNN)'),
+        ('timemixer', timemixer_baseline, '[6/7] TimeMixer'),
+        ('trident', trident_rolling_anchor, '[7/7] Trident')
     ]
     
     for key, func, label in methods:
@@ -387,11 +502,7 @@ def run_single_sample(mile, verbose=True):
             print(f"  {label}...", end=' ', flush=True)
         
         try:
-            # LSTM和TimeMixer需要更长的训练时间
-            if key in ['lstm', 'timemixer']:
-                metrics = func(train_df, test_df)
-            else:
-                metrics = func(train_df, test_df)
+            metrics = func(train_df, test_df)
             
             result[f'{key}_mae'] = metrics['mae']
             result[f'{key}_rmse'] = metrics['rmse']
@@ -406,8 +517,8 @@ def run_single_sample(mile, verbose=True):
             result[f'{key}_rmse'] = float('nan')
             result[f'{key}_mape'] = float('nan')
     
-    # 确定最佳基线
-    baseline_keys = ['historical_mean', 'ma', 'holt_winters', 'lstm', 'timemixer']
+    # 确定最佳基线（从统计方法和深度学习方法中选择）
+    baseline_keys = ['historical_mean', 'ma', 'holt_winters', 'mlp', 'lstm', 'timemixer']
     baseline_maes = {k: result[f'{k}_mae'] for k in baseline_keys}
     valid_baselines = {k: v for k, v in baseline_maes.items() if not np.isnan(v)}
     
@@ -493,7 +604,7 @@ def generate_summary(df):
     }
     
     # 各基线获胜次数
-    baseline_keys = ['historical_mean', 'ma', 'holt_winters', 'lstm', 'timemixer']
+    baseline_keys = ['historical_mean', 'ma', 'holt_winters', 'mlp', 'lstm', 'timemixer']
     for key in baseline_keys:
         count = (df['best_baseline'] == key).sum()
         summary['baseline_wins'][key] = int(count)
@@ -543,20 +654,27 @@ def print_summary(summary):
 # ==================== 主入口 ====================
 if __name__ == "__main__":
     print("="*70)
-    print("491样本基线对比实验 - 6种方法")
+    print("491样本基线对比实验 - 7种方法")
     print("="*70)
     print("\n方法列表:")
     print("  1. 历史均值 (Historical Mean)")
     print("  2. 移动平均 (Moving Average)")
     print("  3. Holt-Winters (Triple Exponential Smoothing)")
-    print("  4. LSTM")
-    print("  5. TimeMixer")
-    print("  6. Trident (滚动锚定)")
+    print("  4. MLP (Multi-Layer Perceptron) - 与514实验可比")
+    print("  5. LSTM (Long Short-Term Memory) - 真正RNN实现")
+    print("  6. TimeMixer (多尺度分解)")
+    print("  7. Trident (滚动锚定)")
     print("\n代码复用来源:")
-    print("  - MA/LSTM/TimeMixer: run_baseline_full.py")
-    print("  - Trident: full_experiment_514.py")
+    print("  - MA/TimeMixer: run_baseline_full.py")
+    print("  - MLP: full_experiment_514.py (原被误命名为'LSTM')")
+    print("  - LSTM: run_baseline_full.py (真正的循环神经网络)")
+    print("  - Trident: full_experiment_514.py (已按论文设计修正)")
     print("  - Historical Mean: 新增")
     print("  - Holt-Winters: 升级使用statsmodels")
+    print("\n重要说明:")
+    print("  - MLP使用sklearn的MLPRegressor，与514实验结果直接可比")
+    print("  - LSTM使用tensorflow.keras.layers.LSTM，是真正的深度学习基线")
+    print("  - Trident已按论文公式完整实现: 锚定值+季节性+劣化趋势")
     print("="*70)
     
     # 加载样本列表
