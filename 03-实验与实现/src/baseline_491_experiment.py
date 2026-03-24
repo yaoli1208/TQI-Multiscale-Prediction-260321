@@ -237,8 +237,9 @@ def lstm_baseline(train_df, test_df):
         
         tf.get_logger().setLevel('ERROR')
         
-        train_values = train_df['tqi_value'].values
-        test_values = test_df['tqi_value'].values
+        # 修复: 强制转换为float64，避免object dtype错误
+        train_values = train_df['tqi_value'].values.astype(np.float64)
+        test_values = test_df['tqi_value'].values.astype(np.float64)
         
         if len(train_values) < 50:
             return {'mae': float('nan'), 'rmse': float('nan'), 'mape': float('nan')}
@@ -256,7 +257,8 @@ def lstm_baseline(train_df, test_df):
             for i in range(len(data) - seq_len):
                 X.append(data[i:i+seq_len])
                 y.append(data[i+seq_len])
-            return np.array(X), np.array(y)
+            # 修复: 强制转换为float64，避免object dtype错误
+            return np.array(X, dtype=np.float64), np.array(y, dtype=np.float64)
         
         X_train, y_train = create_sequences(train_normalized, seq_length)
         if len(X_train) < 10:
