@@ -1,0 +1,15 @@
+Method,Category,Count
+Trident_v21,Great_Loss,1
+Trident_v21,Great_Win,13
+Trident_v21,Loss,2
+Trident_v21,Small_Loss,4
+Trident_v21,Small_Win,5
+Trident_v21,Tie,30
+Trident_v21,Win,17
+Trident_v23_no_seasonal,Great_Loss,10
+Trident_v23_no_seasonal,Great_Win,15
+Trident_v23_no_seasonal,Loss,7
+Trident_v23_no_seasonal,Small_Loss,7
+Trident_v23_no_seasonal,Small_Win,3
+Trident_v23_no_seasonal,Tie,19
+Trident_v23_no_seasonal,Win,11

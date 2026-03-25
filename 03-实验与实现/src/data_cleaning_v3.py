@@ -136,11 +136,15 @@ print(f"  条件2: 平均TQI ≤ 6")
 qualified = qualified[qualified['tqi_mean'] <= 6]
 print(f"    通过后: {len(qualified)}")
 
-print(f"  条件3: 时间跨度 ≥ 10年 (3650天)")
+print(f"  条件3: 平均TQI ≥ 1.5 (新增)")
+qualified = qualified[qualified['tqi_mean'] >= 1.5]
+print(f"    通过后: {len(qualified)}")
+
+print(f"  条件4: 时间跨度 ≥ 10年 (3650天)")
 qualified = qualified[qualified['time_span_days'] >= 3650]
 print(f"    通过后: {len(qualified)}")
 
-print(f"  条件4: 月度覆盖度 ≥ 95%")
+print(f"  条件5: 月度覆盖度 ≥ 95%")
 qualified = qualified[qualified['monthly_coverage'] >= 0.95]
 print(f"    通过后: {len(qualified)}")
 
